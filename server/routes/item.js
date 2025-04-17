@@ -37,6 +37,26 @@ router.get('/', (req, res) => {
     })
 })
 
+// search items by category
+router.get('/category/:categoryId', (req, res) => {
+    const categoryId = req.params.categoryId
+    const sql = `SELECT Items.ItemId, Items.ItemName, Items.ItemPrice, ItemCategory.ItemCategoryName 
+    FROM Items,ItemCategory WHERE Items.ItemCategoryId = ItemCategory.ItemCategoryId AND Items.ItemCategoryId = ${categoryId}`
+    pool.query(sql, (error, data) => {
+        res.send(result.createResult(error, data))
+    })
+})
+
+// search item by itemid
+// router.get('/:itemId', (req, res) => {
+//     const id = req.params.itemId
+//     const sql = `SELECT Items.ItemId, Items.ItemName, Items.ItemPrice
+//     FROM Items WHERE ItemId = ${id}`
+//     pool.query(sql, (error, data) => {
+//         res.send(result.createResult(error, data))
+//     })
+// })
+
 router.put('/', (req, res) => {
     const { itemId, itemName, itemPrice, itemCategoryId } = req.body
     const sql = `UPDATE Items SET ItemName = ?, ItemPrice = ?, ItemCategoryId = ? WHERE ItemId = ?`

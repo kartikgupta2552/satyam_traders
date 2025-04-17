@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react'
-import { addItem, getItems } from '../services/item'
+import { addItem, getAllItems, getItemsByCategory } from '../services/item'
 import { getItemCategories } from '../services/itemCategory'
 import { toast } from 'react-toastify'
 import { addOrderItem } from '../services/orderItems'
+import { useNavigate } from 'react-router-dom'
 
 function Home() {
 
@@ -11,14 +12,26 @@ function Home() {
 
     let orderItems = {}
 
+    const navigate = useNavigate()
+
     useEffect(() => {
-        loadItems()
+        loadAllItems()
         loadItemCategories()
     }, [])
 
-    const loadItems = async () => {
-        const response = await getItems()
+    const loadAllItems = async () => {
+        const response = await getAllItems()
 
+        if (response.status == 'success') {
+            setItems(response.data)
+        } else {
+            console.log(response.error)
+        }
+    }
+
+    const loadItemByCategory = async (id) => {
+        const response = await getItemsByCategory(id)
+        
         if (response.status == 'success') {
             setItems(response.data)
         } else {
@@ -36,6 +49,41 @@ function Home() {
         }
     }
 
+    // const onPlaceOrderClicked = async () => {
+    //     const trimmedOrder = Object.fromEntries(
+    //         Object.entries(orderItems)
+    //             .map(([key, value]) => [key, value.trim()])
+    //             .filter(([key, value]) => value !== '')
+    //     );
+
+    //     const isEmpty = Object.keys(trimmedOrder).length === 0;
+
+    //     if (!isEmpty) {
+    //         const body = []
+    //         Object.entries(trimmedOrder).forEach(([key, value]) => {
+    //             body.push({
+    //                 orderId: 1,
+    //                 itemId: Number(key),
+    //                 quantity: value
+    //             })
+    //         });
+
+    //         const response = await addOrderItem(body)
+
+    //         if (response.status == 'success') {
+    //             toast.success("Order Placed Successfully")
+    //             orderItems = {}
+    //             setItems([])
+    //             loadAllItems()
+    //         } else {
+    //             console.log(response.error)
+    //         }
+    //     }
+    //     else {
+    //         toast.warn("Please add items")
+    //     }
+    // }
+
     const onPlaceOrderClicked = async () => {
         const trimmedOrder = Object.fromEntries(
             Object.entries(orderItems)
@@ -46,22 +94,16 @@ function Home() {
         const isEmpty = Object.keys(trimmedOrder).length === 0;
 
         if (!isEmpty) {
-            const body = []
+            const finalOrder = []
             Object.entries(trimmedOrder).forEach(([key, value]) => {
-                body.push({
-                    orderId: 1,
+                finalOrder.push({
                     itemId: Number(key),
                     quantity: value
                 })
             });
 
-            const response = await addOrderItem(body)
-
-            if (response.status == 'success') {
-                toast.success("Order Placed Successfully")
-            } else {
-                console.log(response.error)
-            }
+            navigate('/order' , {state : finalOrder})
+            
         }
         else {
             toast.warn("Please add items")
@@ -71,15 +113,17 @@ function Home() {
     return (
 
         <div className='container m-3'>
-            <div>
-                <button className="btn btn-primary btn-sm me-1">All Items</button>
-                {
-                    itemCategories.map((item) => {
-                        return (
-                            <button key={item.ItemCategoryId} className="btn btn-primary btn-sm me-1">{item.ItemCategoryName}</button>
-                        )
-                    })
-                }
+            <div className='center-item'>
+                <div className='scrollable-container '>
+                    <button onClick={ () => loadAllItems()} className="btn btn-primary btn-sm me-1">All Items</button>
+                    {
+                        itemCategories.map((item) => {
+                            return (
+                                <button onClick={ () => {loadItemByCategory(item.ItemCategoryId)}} key={item.ItemCategoryId} className="btn btn-primary btn-sm me-1">{item.ItemCategoryName}</button>
+                            )
+                        })
+                    }
+                </div>
             </div>
             <table className="table mt-3">
                 <thead>

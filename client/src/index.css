@@ -1,0 +1,13 @@
+.scrollable-container{
+    scrollbar-width: none;
+    width: 95%;
+    overflow-x: auto;
+    white-space: nowrap; 
+    padding: 10px; 
+}
+
+.center-item{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
