@@ -1,14 +1,49 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import { useLocation } from 'react-router-dom'
+import { getAllItems } from '../services/item'
 
 function PlaceOrder() {
 
     const location = useLocation()
-    const finalOrder = location.state || {}
+    let finalOrder = location.state || {}
 
-    console.log(finalOrder)
+    const [showOrderItems, setShowOrderItems] = useState([])
 
-    
+
+    useEffect(() => {
+        loadAllItems()
+    }, [])
+
+
+    const loadAllItems = async () => {
+        const response = await getAllItems()
+
+        if (response.status == 'success') {
+            const allItems = response.data
+            const tempOrderItem = []
+
+            for (const orderItem of finalOrder) {
+                for (const item of allItems) {
+                    if (item.ItemId === orderItem.itemId) {
+                        tempOrderItem.push({
+                            itemName: item.ItemName,
+                            itemPrice: item.ItemPrice,
+                            quantity: orderItem.quantity
+                        })
+                    }
+                }
+            }
+
+            setShowOrderItems(tempOrderItem)
+
+
+
+        } else {
+            console.log(response.error)
+        }
+    }
+
+
 
     return (
         <div className='container m-3'>
@@ -22,20 +57,37 @@ function PlaceOrder() {
                     </tr>
                 </thead>
                 <tbody>
-                    {/* {
-                        items.map((item, index) => {
+                    {
+                        showOrderItems.map((item, index) => {
                             return (
-                                <tr key={item.ItemId}>
+                                <tr key={index}>
                                     <td>{index + 1}</td>
-                                    <td>{item.ItemName}</td>
-                                    <td>{item.ItemPrice}</td>
-                                    <td><input onChange={(p) => { orderItems[`${item.ItemId}`] = p.target.value }} type="text" className="form-control" maxLength={30} /></td>
+                                    <td>{item.itemName}</td>
+                                    <td>{item.itemPrice}</td>
+                                    <td>{item.quantity}</td>
                                 </tr>
                             )
                         })
-                    } */}
+                    }
                 </tbody>
             </table>
+
+
+
+            <div style={{width:'50%'}}>
+                <div className="mb-3 row">
+                    <label for="inputName" className="col-sm-2 col-form-label">Enter Name</label>
+                    <div className="col-sm-10">
+                        <input type="text" className="form-control" id="inputName" />
+                    </div>
+                </div>
+                <div className="mb-3 row">
+                    <label for="inputMobile" className="col-sm-2 col-form-label">Mobile Number</label>
+                    <div className="col-sm-10">
+                        <input type="tel" className="form-control" id="inputMobile" />
+                    </div>
+                </div>
+            </div>
         </div>
     )
 }
